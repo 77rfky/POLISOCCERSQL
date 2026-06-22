@@ -23,8 +23,10 @@ export default function FieldMgmt() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setFields(data.length ? data : mockFields);
-    } catch { setFields(mockFields); }
+      setFields(data); // Tampilkan array kosong jika tidak ada data di DB
+    } catch { 
+      setFields(mockFields); // Hanya fallback ke mock jika server mati
+    }
     finally { setLoading(false); }
   };
 
@@ -41,18 +43,22 @@ export default function FieldMgmt() {
       if (!res.ok) throw new Error();
       setShowModal(false); fetchFields();
     } catch {
-      if (editField) setFields(prev => prev.map(f => f.id_lapangan === editField.id_lapangan ? { ...f, ...form } : f));
-      else setFields(prev => [...prev, { id_lapangan: Date.now(), ...form }]);
-      setShowModal(false);
+      alert('Failed to save field');
     }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this field?')) return;
     try {
-      await fetch(`http://localhost:5001/api/fields/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`http://localhost:5001/api/fields/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to delete');
+      }
       fetchFields();
-    } catch { setFields(prev => prev.filter(f => f.id_lapangan !== id)); }
+    } catch (err) { 
+      alert(err.message); 
+    }
   };
 
   return (

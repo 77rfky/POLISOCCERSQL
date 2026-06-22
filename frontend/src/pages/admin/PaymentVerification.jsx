@@ -27,7 +27,7 @@ export default function PaymentVerification() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPayments(data.length ? data : mockPayments);
+      setPayments(data);
     } catch {
       setPayments(mockPayments);
     } finally {

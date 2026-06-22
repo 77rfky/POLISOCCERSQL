@@ -23,7 +23,7 @@ export default function UserMgmt() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setUsers(data.length ? data : mockUsers);
+      setUsers(data);
     } catch {
       setUsers(mockUsers);
     } finally {

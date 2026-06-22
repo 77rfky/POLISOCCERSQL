@@ -23,7 +23,7 @@ export default function PricingMgmt() {
       const res = await fetch('http://localhost:5001/api/pricing', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPricing(data.length ? data : mockPricing);
+      setPricing(data);
     } catch { setPricing(mockPricing); }
     finally { setLoading(false); }
   };

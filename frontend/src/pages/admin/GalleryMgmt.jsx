@@ -22,7 +22,7 @@ export default function GalleryMgmt() {
       const res = await fetch('http://localhost:5001/api/gallery');
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPhotos(data.length ? data : mockPhotos);
+      setPhotos(data);
     } catch { setPhotos(mockPhotos); }
     finally { setLoading(false); }
   };

@@ -29,8 +29,10 @@ export default function BookingMgmt() {
       const res = await fetch('http://localhost:5001/api/bookings', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setBookings(data.length ? data : mockBookings);
-    } catch { setBookings(mockBookings); }
+      setBookings(data);
+    } catch { 
+      setBookings(mockBookings); 
+    }
     finally { setLoading(false); }
   };
 
@@ -39,14 +41,18 @@ export default function BookingMgmt() {
   const handleCancel = async (id) => {
     if (!confirm('Cancel this booking?')) return;
     try {
-      await fetch(`http://localhost:5001/api/cancellations`, {
+      const res = await fetch(`http://localhost:5001/api/cancellations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id_booking: id, alasan_batal: 'Cancelled by admin' })
       });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to cancel booking');
+      }
       fetchBookings();
-    } catch {
-      setBookings(prev => prev.map(b => b.id_booking === id ? { ...b, status_booking: 'Cancelled' } : b));
+    } catch (err) {
+      alert(err.message);
     }
   };
 
