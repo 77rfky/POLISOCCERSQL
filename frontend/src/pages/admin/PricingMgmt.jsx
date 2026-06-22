@@ -20,7 +20,7 @@ export default function PricingMgmt() {
 
   const fetchPricing = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/pricing', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/pricing', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setPricing(data);
@@ -34,7 +34,7 @@ export default function PricingMgmt() {
   const openEdit = (p) => { setEditItem(p); setForm({ nama_kategori: p.nama_kategori, jam_mulai_berlaku: p.jam_mulai_berlaku.slice(0, 5), jam_selesai_berlaku: p.jam_selesai_berlaku.slice(0, 5), harga_per_jam: p.harga_per_jam }); setShowModal(true); };
 
   const handleSave = async () => {
-    const url = editItem ? `http://localhost:5001/api/pricing/${editItem.id_tarif}` : 'http://localhost:5001/api/pricing';
+    const url = editItem ? `https://polisoccersql-production.up.railway.app/api/pricing/${editItem.id_tarif}` : 'https://polisoccersql-production.up.railway.app/api/pricing';
     const method = editItem ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) });
@@ -50,7 +50,7 @@ export default function PricingMgmt() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this pricing tier?')) return;
     try {
-      await fetch(`http://localhost:5001/api/pricing/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`https://polisoccersql-production.up.railway.app/api/pricing/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchPricing();
     } catch { setPricing(prev => prev.filter(p => p.id_tarif !== id)); }
   };

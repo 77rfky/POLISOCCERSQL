@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/analytics', {
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/analytics', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error();

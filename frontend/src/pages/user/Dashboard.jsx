@@ -33,7 +33,7 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/bookings/my-bookings', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed');
@@ -53,7 +53,7 @@ export default function UserDashboard() {
     if (!alasan) return; // User cancelled the prompt
 
     try {
-      const res = await fetch('http://localhost:5001/api/cancellations', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/cancellations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

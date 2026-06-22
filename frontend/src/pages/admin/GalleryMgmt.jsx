@@ -19,7 +19,7 @@ export default function GalleryMgmt() {
 
   const fetchPhotos = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/gallery');
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/gallery');
       if (!res.ok) throw new Error();
       const data = await res.json();
       setPhotos(data);
@@ -37,7 +37,7 @@ export default function GalleryMgmt() {
     formData.append('judul_foto', title);
     formData.append('file_gambar', file);
     try {
-      const res = await fetch('http://localhost:5001/api/gallery', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/gallery', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -54,7 +54,7 @@ export default function GalleryMgmt() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this photo?')) return;
     try {
-      await fetch(`http://localhost:5001/api/gallery/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`https://polisoccersql-production.up.railway.app/api/gallery/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchPhotos();
     } catch { setPhotos(prev => prev.filter(p => p.id_konten !== id)); }
   };
@@ -143,7 +143,7 @@ export default function GalleryMgmt() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
           {photos.map((photo, idx) => {
             const isUrl = photo.file_gambar.startsWith('http') || photo.file_gambar.startsWith('blob');
-            const imgSrc = isUrl ? photo.file_gambar : `http://localhost:5001/uploads/gallery/${photo.file_gambar}`;
+            const imgSrc = isUrl ? photo.file_gambar : `https://polisoccersql-production.up.railway.app/uploads/gallery/${photo.file_gambar}`;
             const date = new Date(photo.tgl_upload).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
             return (
               <motion.div 

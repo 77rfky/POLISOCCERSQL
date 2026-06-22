@@ -18,7 +18,7 @@ export default function UserMgmt() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/auth/users', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/auth/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
@@ -36,7 +36,7 @@ export default function UserMgmt() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this user?')) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/auth/users/${id}`, {
+      const res = await fetch(`https://polisoccersql-production.up.railway.app/api/auth/users/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

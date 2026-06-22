@@ -26,7 +26,7 @@ export default function BookingMgmt() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/bookings', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/bookings', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setBookings(data);
@@ -41,7 +41,7 @@ export default function BookingMgmt() {
   const handleCancel = async (id) => {
     if (!confirm('Cancel this booking?')) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/cancellations`, {
+      const res = await fetch(`https://polisoccersql-production.up.railway.app/api/cancellations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id_booking: id, alasan_batal: 'Cancelled by admin' })

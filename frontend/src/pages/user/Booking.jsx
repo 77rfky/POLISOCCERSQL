@@ -23,11 +23,11 @@ export default function Booking() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const fieldsRes = await fetch('http://localhost:5001/api/fields');
+        const fieldsRes = await fetch('https://polisoccersql-production.up.railway.app/api/fields');
         const fieldsData = await fieldsRes.json();
         setFields(fieldsData);
 
-        const pricingRes = await fetch('http://localhost:5001/api/pricing');
+        const pricingRes = await fetch('https://polisoccersql-production.up.railway.app/api/pricing');
         const pricingData = await pricingRes.json();
         setPricingRates(pricingData);
       } catch (err) {
@@ -47,7 +47,7 @@ export default function Booking() {
     const fetchAvailability = async () => {
       setLoadingAvailability(true);
       try {
-        const res = await fetch(`http://localhost:5001/api/bookings/availability?fieldId=${selectedField}&date=${selectedDate}`);
+        const res = await fetch(`https://polisoccersql-production.up.railway.app/api/bookings/availability?fieldId=${selectedField}&date=${selectedDate}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         setBookedSlots(data.booked_slots || []);
@@ -136,7 +136,7 @@ export default function Booking() {
     }
 
     try {
-      const res = await fetch('http://localhost:5001/api/bookings', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ export default function History() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/bookings/my-bookings', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed');

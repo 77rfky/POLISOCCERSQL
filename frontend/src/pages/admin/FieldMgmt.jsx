@@ -18,7 +18,7 @@ export default function FieldMgmt() {
 
   const fetchFields = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/fields', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/fields', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
@@ -36,7 +36,7 @@ export default function FieldMgmt() {
   const openEdit = (f) => { setEditField(f); setForm({ nama_lapangan: f.nama_lapangan, jenis_rumput: f.jenis_rumput, deskripsi: f.deskripsi }); setShowModal(true); };
 
   const handleSave = async () => {
-    const url = editField ? `http://localhost:5001/api/fields/${editField.id_lapangan}` : 'http://localhost:5001/api/fields';
+    const url = editField ? `https://polisoccersql-production.up.railway.app/api/fields/${editField.id_lapangan}` : 'https://polisoccersql-production.up.railway.app/api/fields';
     const method = editField ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) });
@@ -50,7 +50,7 @@ export default function FieldMgmt() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this field?')) return;
     try {
-      const res = await fetch(`http://localhost:5001/api/fields/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`https://polisoccersql-production.up.railway.app/api/fields/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to delete');

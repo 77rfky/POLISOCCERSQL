@@ -95,7 +95,7 @@ export default function Gallery() {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/gallery');
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/gallery');
         if (!res.ok) throw new Error('Failed to fetch gallery');
         const data = await res.json();
         setPhotos(data || []);
@@ -188,7 +188,7 @@ export default function Gallery() {
               const dateObj = new Date(photo.tgl_upload);
               const dateStr = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
               const isUrl = photo.file_gambar.startsWith('http');
-              const imgSrc = isUrl ? photo.file_gambar : `http://localhost:5001/uploads/gallery/${photo.file_gambar}`;
+              const imgSrc = isUrl ? photo.file_gambar : `https://polisoccersql-production.up.railway.app/uploads/gallery/${photo.file_gambar}`;
               const premiumData = getPremiumData(photo.id_konten);
               
               return (
@@ -294,7 +294,7 @@ export default function Gallery() {
                 {(() => {
                   const currentPhoto = photos[selectedIndex];
                   const isUrl = currentPhoto.file_gambar.startsWith('http');
-                  const imgSrc = isUrl ? currentPhoto.file_gambar : `http://localhost:5001/uploads/gallery/${currentPhoto.file_gambar}`;
+                  const imgSrc = isUrl ? currentPhoto.file_gambar : `https://polisoccersql-production.up.railway.app/uploads/gallery/${currentPhoto.file_gambar}`;
                   return (
                     <img 
                       src={imgSrc} 

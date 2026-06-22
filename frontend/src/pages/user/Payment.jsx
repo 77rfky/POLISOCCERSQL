@@ -19,7 +19,7 @@ export default function Payment() {
   useEffect(() => {
     const fetchPendingBookings = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/bookings/my-bookings', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error();
@@ -46,7 +46,7 @@ export default function Payment() {
     formData.append('bukti_transfer', file);
 
     try {
-      const res = await fetch('http://localhost:5001/api/payments', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/payments', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

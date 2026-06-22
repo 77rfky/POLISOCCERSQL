@@ -22,7 +22,7 @@ export default function PaymentVerification() {
 
   const fetchPayments = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/payments', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/payments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
@@ -40,7 +40,7 @@ export default function PaymentVerification() {
   const handleVerify = async (id, status) => {
     setVerifying(id);
     try {
-      const res = await fetch(`http://localhost:5001/api/payments/${id}/verify`, {
+      const res = await fetch(`https://polisoccersql-production.up.railway.app/api/payments/${id}/verify`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status_verifikasi: status })
@@ -112,7 +112,7 @@ export default function PaymentVerification() {
             </div>
           )}
           {row.bukti_transfer && (
-            <a href={`http://localhost:5001/uploads/transfer-proofs/${row.bukti_transfer}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+            <a href={`https://polisoccersql-production.up.railway.app/uploads/transfer-proofs/${row.bukti_transfer}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
               className="flex items-center justify-center gap-1 px-3 py-1.5 bg-white/5 text-brand-300 border border-white/10 rounded-xl text-xs font-bold hover:bg-brand-500 hover:border-transparent hover:text-white transition-all w-full">
               <FaEye /> View Proof
             </a>

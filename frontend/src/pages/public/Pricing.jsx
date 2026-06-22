@@ -12,7 +12,7 @@ export default function Pricing() {
   useEffect(() => {
     const fetchPricing = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/pricing');
+        const res = await fetch('https://polisoccersql-production.up.railway.app/api/pricing');
         if (!res.ok) throw new Error('Failed to fetch pricing');
         const data = await res.json();
         

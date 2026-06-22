@@ -25,7 +25,7 @@ export default function Profile() {
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetch('http://localhost:5001/api/auth/profile', {
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData)

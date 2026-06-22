@@ -12,7 +12,7 @@ export default function CancellationMgmt() {
 
   const fetchCancellations = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/cancellations', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch('https://polisoccersql-production.up.railway.app/api/cancellations', { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setCancellations(data);
@@ -28,7 +28,7 @@ export default function CancellationMgmt() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this cancellation record?')) return;
     try {
-      await fetch(`http://localhost:5001/api/cancellations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`https://polisoccersql-production.up.railway.app/api/cancellations/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchCancellations();
     } catch { setCancellations(prev => prev.filter(c => c.id_batal !== id)); }
   };
