@@ -102,14 +102,15 @@ export default function Booking() {
 
   // Calculate pricing based on categories and selected time slot
   const currentPricing = useMemo(() => {
-    if (!selectedTime) return null;
+    if (!selectedTime || !selectedField) return null;
     const hour = parseInt(selectedTime.split(':')[0], 10);
     return pricingRates.find(rate => {
+      if (!rate.jam_mulai_berlaku || !rate.jam_selesai_berlaku) return false;
       const start = parseInt(rate.jam_mulai_berlaku.split(':')[0], 10);
       const end = parseInt(rate.jam_selesai_berlaku.split(':')[0], 10);
-      return hour >= start && hour < end;
+      return hour >= start && hour < end && rate.id_lapangan == selectedField;
     });
-  }, [selectedTime, pricingRates]);
+  }, [selectedTime, selectedField, pricingRates]);
 
   const totalCost = currentPricing ? currentPricing.harga_per_jam * duration : 0;
 
@@ -132,6 +133,11 @@ export default function Booking() {
 
     if (hasConflict) {
       setErrorMsg('Jam atau durasi yang dipilih bertabrakan dengan pemesanan lain.');
+      return;
+    }
+
+    if (!currentPricing) {
+      setErrorMsg('Tidak ada tarif yang tersedia untuk jadwal ini.');
       return;
     }
 
