@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave, FaTags } from 'react-icons/fa';
+import GlassTable from '../../components/ui/GlassTable';
+import PremiumInput from '../../components/ui/PremiumInput';
 
 const mockPricing = [
   { id_tarif: 1, nama_kategori: 'Pagi', jam_mulai_berlaku: '08:00:00', jam_selesai_berlaku: '12:00:00', harga_per_jam: 100000 },
@@ -53,92 +55,141 @@ export default function PricingMgmt() {
     } catch { setPricing(prev => prev.filter(p => p.id_tarif !== id)); }
   };
 
-  return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">Pricing Management</h1>
-          <p className="text-slate-500 mt-1">Configure pricing categories and rates.</p>
+  const columns = [
+    { 
+      header: 'Category', 
+      accessor: 'nama_kategori',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+            <FaTags />
+          </div>
+          <span className="font-bold text-white text-lg tracking-wide">{row.nama_kategori}</span>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:-translate-y-0.5 transition-all">
-          <FaPlus /> Add Pricing
+      )
+    },
+    { 
+      header: 'Time Period', 
+      accessor: 'time',
+      render: (row) => (
+        <span className="text-brand-300 font-medium">
+          {String(row.jam_mulai_berlaku).slice(0, 5)} - {String(row.jam_selesai_berlaku).slice(0, 5)}
+        </span>
+      )
+    },
+    { 
+      header: 'Price / Hour', 
+      accessor: 'harga_per_jam',
+      render: (row) => <span className="font-black text-emerald-400 text-lg">Rp {parseInt(row.harga_per_jam).toLocaleString()}</span>
+    },
+    { 
+      header: 'Actions', 
+      accessor: 'actions',
+      render: (row) => (
+        <div className="flex justify-center gap-3">
+          <button onClick={() => openEdit(row)} className="p-2.5 text-brand-300 hover:text-white hover:bg-brand-500/20 border border-transparent hover:border-brand-500/30 rounded-xl transition-all shadow-sm">
+            <FaEdit />
+          </button>
+          <button onClick={() => handleDelete(row.id_tarif)} className="p-2.5 text-rose-400 hover:text-white hover:bg-rose-500/20 border border-transparent hover:border-rose-500/30 rounded-xl transition-all shadow-sm">
+            <FaTrash />
+          </button>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tight">Pricing Management</h1>
+          <p className="text-brand-300 font-medium mt-2">Configure time-based pricing categories.</p>
+        </div>
+        <button onClick={openCreate} className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl font-bold shadow-[0_0_20px_rgba(109,40,217,0.4)] hover:shadow-[0_0_30px_rgba(109,40,217,0.6)] transition-all shimmer-button">
+          <FaPlus /> Add Pricing Tier
         </button>
       </motion.div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Category</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Start Time</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">End Time</th>
-                <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Price / Hour</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {pricing.map(p => (
-                <tr key={p.id_tarif} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-slate-800">{p.nama_kategori}</td>
-                  <td className="py-4 px-6 text-slate-600">{String(p.jam_mulai_berlaku).slice(0, 5)}</td>
-                  <td className="py-4 px-6 text-slate-600">{String(p.jam_selesai_berlaku).slice(0, 5)}</td>
-                  <td className="py-4 px-6 text-right font-bold text-brand-700">Rp {parseInt(p.harga_per_jam).toLocaleString()}</td>
-                  <td className="py-4 px-6 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button onClick={() => openEdit(p)} className="p-2 text-brand-500 hover:bg-brand-50 rounded-lg transition-colors"><FaEdit /></button>
-                      <button onClick={() => handleDelete(p.id_tarif)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg transition-colors"><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-slate-800">{editItem ? 'Edit Pricing' : 'Add Pricing Tier'}</h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-700"><FaTimes /></button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Category Name</label>
-                <input value={form.nama_kategori} onChange={e => setForm({...form, nama_kategori: e.target.value})}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" placeholder="e.g. Pagi" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">Start Time</label>
-                  <input type="time" value={form.jam_mulai_berlaku} onChange={e => setForm({...form, jam_mulai_berlaku: e.target.value})}
-                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">End Time</label>
-                  <input type="time" value={form.jam_selesai_berlaku} onChange={e => setForm({...form, jam_selesai_berlaku: e.target.value})}
-                    className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Price per Hour (Rp)</label>
-                <input type="number" value={form.harga_per_jam} onChange={e => setForm({...form, harga_per_jam: e.target.value})}
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" placeholder="150000" />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 font-medium">Cancel</button>
-              <button onClick={handleSave} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold">
-                <FaSave /> Save
-              </button>
-            </div>
-          </motion.div>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
         </div>
+      ) : (
+        <GlassTable 
+          columns={columns}
+          data={pricing}
+          keyExtractor={(row) => row.id_tarif}
+          emptyMessage="No pricing tiers configured."
+        />
       )}
+
+      {/* Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setShowModal(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="glass-premium rounded-[2.5rem] p-8 w-full max-w-md shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10 overflow-hidden"
+            >
+              {/* Modal Ambient Glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+              <div className="flex justify-between items-center mb-8 relative z-10">
+                <h2 className="text-2xl font-black text-white tracking-tight">{editItem ? 'Edit Pricing' : 'Add Pricing Tier'}</h2>
+                <button onClick={() => setShowModal(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 transition-colors border border-white/5"><FaTimes /></button>
+              </div>
+              
+              <div className="space-y-5 relative z-10">
+                <PremiumInput 
+                  label="Category Name" 
+                  value={form.nama_kategori} 
+                  onChange={e => setForm({...form, nama_kategori: e.target.value})} 
+                  placeholder="e.g. Afternoon Prime" 
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <PremiumInput 
+                    type="time"
+                    label="Start Time" 
+                    value={form.jam_mulai_berlaku} 
+                    onChange={e => setForm({...form, jam_mulai_berlaku: e.target.value})} 
+                  />
+                  <PremiumInput 
+                    type="time"
+                    label="End Time" 
+                    value={form.jam_selesai_berlaku} 
+                    onChange={e => setForm({...form, jam_selesai_berlaku: e.target.value})} 
+                  />
+                </div>
+
+                <PremiumInput 
+                  type="number"
+                  label="Price per Hour (Rp)" 
+                  value={form.harga_per_jam} 
+                  onChange={e => setForm({...form, harga_per_jam: e.target.value})} 
+                  placeholder="150000" 
+                />
+              </div>
+              
+              <div className="flex justify-end gap-4 mt-8 relative z-10">
+                <button onClick={() => setShowModal(false)} className="px-6 py-3 border border-white/10 text-text-secondary rounded-2xl hover:bg-white/5 hover:text-white font-bold transition-all">Cancel</button>
+                <button onClick={handleSave} className="flex items-center gap-2 px-8 py-3 bg-brand-600 text-white rounded-2xl font-bold shadow-[0_0_20px_rgba(109,40,217,0.4)] hover:bg-brand-500 hover:shadow-[0_0_30px_rgba(109,40,217,0.6)] transition-all">
+                  <FaSave /> Save
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

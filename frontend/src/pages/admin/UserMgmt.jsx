@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaUsers, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaTrash, FaSearch } from 'react-icons/fa';
+import GlassTable from '../../components/ui/GlassTable';
+import PremiumInput from '../../components/ui/PremiumInput';
 
 const mockUsers = [
   { id_pengguna: 1, nama_lengkap: 'John Doe', email: 'john@example.com', identitas: '12345678', no_whatsapp: '081234567890', role: 'User' },
@@ -41,7 +43,6 @@ export default function UserMgmt() {
       if (!res.ok) throw new Error();
       fetchUsers();
     } catch {
-      // Remove from local state for mock
       setUsers(prev => prev.filter(u => u.id_pengguna !== id));
     }
   };
@@ -51,75 +52,77 @@ export default function UserMgmt() {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const columns = [
+    {
+      header: 'User',
+      accessor: 'nama_lengkap',
+      render: (row) => (
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-[0_0_15px_rgba(139,92,246,0.5)]">
+            {row.nama_lengkap.charAt(0)}
+          </div>
+          <div>
+            <p className="font-bold text-white tracking-wide">{row.nama_lengkap}</p>
+            <p className="text-xs text-text-muted">{row.email}</p>
+          </div>
+        </div>
+      )
+    },
+    { header: 'NIM / NIK', accessor: 'identitas', render: (row) => <span className="font-mono text-brand-300 bg-brand-500/10 px-2 py-1 rounded-md">{row.identitas || '-'}</span> },
+    { header: 'WhatsApp', accessor: 'no_whatsapp', render: (row) => <span className="text-text-secondary">{row.no_whatsapp || '-'}</span> },
+    {
+      header: 'Role',
+      accessor: 'role',
+      render: (row) => (
+        <span className={`text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest ${row.role === 'Admin' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30' : 'bg-white/10 text-text-secondary border border-white/5'}`}>
+          {row.role}
+        </span>
+      )
+    },
+    {
+      header: 'Action',
+      accessor: 'action',
+      render: (row) => row.role !== 'Admin' ? (
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleDelete(row.id_pengguna); }}
+          className="p-2.5 text-red-400 hover:text-white hover:bg-red-500 rounded-xl transition-all shadow-[0_0_10px_rgba(239,68,68,0)] hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] group"
+          title="Delete User"
+        >
+          <FaTrash className="group-hover:scale-110 transition-transform" />
+        </button>
+      ) : <span className="text-xs text-text-muted px-2">Protected</span>
+    }
+  ];
+
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-800">User Management</h1>
-        <p className="text-slate-500 mt-1">View and manage all registered users.</p>
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tight">User Management</h1>
+          <p className="text-brand-300 font-medium mt-2">Manage registered members and administrators.</p>
+        </div>
+        <div className="w-full md:w-80">
+          <PremiumInput 
+            icon={FaSearch}
+            placeholder="Search users..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
       </motion.div>
 
-      {/* Search */}
-      <div className="mb-6 relative max-w-sm">
-        <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none"
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
+        </div>
+      ) : (
+        <GlassTable 
+          columns={columns}
+          data={filtered}
+          keyExtractor={(row) => row.id_pengguna}
+          emptyMessage="No users found matching your search."
         />
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">#</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Name</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NIM/NIK</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">WhatsApp</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.map((user, idx) => (
-                <tr key={user.id_pengguna} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 text-sm text-slate-500">{idx + 1}</td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                        {user.nama_lengkap.charAt(0)}
-                      </div>
-                      <span className="font-semibold text-slate-800 text-sm">{user.nama_lengkap}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{user.email}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600 font-mono">{user.identitas || '-'}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{user.no_whatsapp || '-'}</td>
-                  <td className="py-4 px-6 text-center">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${user.role === 'Admin' ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600'}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    {user.role !== 'Admin' && (
-                      <button onClick={() => handleDelete(user.id_pengguna)}
-                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <FaTrash />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      )}
     </div>
   );
 }

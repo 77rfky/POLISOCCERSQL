@@ -1,97 +1,45 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Outlet } from 'react-router-dom';
+import DashboardSidebar from '../components/ui/DashboardSidebar';
 import {
-  FaFutbol, FaTachometerAlt, FaUsers, FaFootballBall,
+  FaTachometerAlt, FaUsers, FaFootballBall,
   FaTags, FaCalendarCheck, FaCreditCard, FaImages,
-  FaBan, FaSignOutAlt, FaShieldAlt
+  FaBan
 } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export default function AdminLayout() {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{"nama_lengkap":"Admin"}');
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
-
   const navItems = [
-    { to: '/admin/dashboard', icon: <FaTachometerAlt />, label: 'Dashboard' },
-    { to: '/admin/users', icon: <FaUsers />, label: 'User Management' },
-    { to: '/admin/fields', icon: <FaFootballBall />, label: 'Field Management' },
-    { to: '/admin/pricing', icon: <FaTags />, label: 'Pricing Management' },
-    { to: '/admin/bookings', icon: <FaCalendarCheck />, label: 'Booking Management' },
-    { to: '/admin/payments', icon: <FaCreditCard />, label: 'Payment Verification' },
-    { to: '/admin/gallery', icon: <FaImages />, label: 'Gallery Management' },
-    { to: '/admin/cancellations', icon: <FaBan />, label: 'Cancellations' },
+    { path: '/admin/dashboard', icon: FaTachometerAlt, label: 'Dashboard' },
+    { path: '/admin/users', icon: FaUsers, label: 'User Management' },
+    { path: '/admin/fields', icon: FaFootballBall, label: 'Field Management' },
+    { path: '/admin/pricing', icon: FaTags, label: 'Pricing Management' },
+    { path: '/admin/bookings', icon: FaCalendarCheck, label: 'Bookings' },
+    { path: '/admin/payments', icon: FaCreditCard, label: 'Payments' },
+    { path: '/admin/gallery', icon: FaImages, label: 'Gallery' },
+    { path: '/admin/cancellations', icon: FaBan, label: 'Cancellations' },
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-100">
-      {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -80, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        className="w-64 bg-slate-900 text-white flex flex-col fixed h-full z-40"
-      >
-        <div className="p-6 border-b border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-brand-600 to-indigo-600 rounded-xl flex items-center justify-center">
-              <FaFutbol className="text-white" />
-            </div>
-            <div>
-              <h1 className="font-extrabold text-lg leading-tight">POLISOCCER</h1>
-              <p className="text-xs text-brand-400 flex items-center gap-1"><FaShieldAlt className="text-xs" /> Admin Panel</p>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-background flex relative overflow-hidden text-text-primary font-sans">
+      {/* Ambient Background Effects */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-brand-600/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[50rem] h-[50rem] bg-indigo-600/10 rounded-full blur-[150px]"></div>
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+      </div>
 
-        <div className="p-4 border-b border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-700 rounded-full flex items-center justify-center font-bold text-lg">
-              {user.nama_lengkap?.charAt(0) || 'A'}
-            </div>
-            <div className="overflow-hidden">
-              <p className="font-semibold text-sm truncate">{user.nama_lengkap}</p>
-              <p className="text-xs text-brand-400 font-medium">Administrator</p>
-            </div>
-          </div>
-        </div>
+      <DashboardSidebar menuItems={navItems} role="ADMIN" />
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-lg shadow-brand-900/40'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                }`
-              }
-            >
-              {item.icon}
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-slate-700">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all text-sm font-medium"
-          >
-            <FaSignOutAlt />
-            Logout
-          </button>
-        </div>
-      </motion.aside>
-
-      {/* Main Content */}
-      <main className="flex-1 ml-64 p-8 min-h-screen">
-        <Outlet />
+      {/* Main Content Area */}
+      <main className="flex-1 ml-[320px] p-8 lg:p-10 relative z-10 min-h-screen overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-7xl mx-auto h-full"
+        >
+          <Outlet />
+        </motion.div>
       </main>
     </div>
   );

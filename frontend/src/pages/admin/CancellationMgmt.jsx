@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaBan, FaTrash } from 'react-icons/fa';
+import { FaBan, FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import GlassTable from '../../components/ui/GlassTable';
 
 const mockCancellations = [];
 
@@ -32,57 +33,74 @@ export default function CancellationMgmt() {
     } catch { setCancellations(prev => prev.filter(c => c.id_batal !== id)); }
   };
 
+  const columns = [
+    { 
+      header: 'Booking ID', 
+      accessor: 'id_booking',
+      render: (row) => <span className="font-mono font-bold text-rose-400 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">{row.id_booking}</span>
+    },
+    { 
+      header: 'User', 
+      accessor: 'nama_lengkap',
+      render: (row) => <span className="font-bold text-white">{row.nama_lengkap}</span>
+    },
+    { 
+      header: 'Match Date', 
+      accessor: 'tgl_main',
+      render: (row) => (
+        <span className="flex items-center gap-2 text-text-secondary">
+          <FaCalendarAlt className="text-brand-400" /> {row.tgl_main}
+        </span>
+      )
+    },
+    { 
+      header: 'Cancelled On', 
+      accessor: 'tgl_batal',
+      render: (row) => <span className="text-brand-300 font-medium">{new Date(row.tgl_batal).toLocaleDateString('id-ID')}</span>
+    },
+    { 
+      header: 'Reason', 
+      accessor: 'alasan_batal',
+      render: (row) => (
+        <span className="inline-block bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold truncate max-w-[200px]" title={row.alasan_batal}>
+          {row.alasan_batal}
+        </span>
+      )
+    },
+    { 
+      header: 'Action', 
+      accessor: 'action',
+      render: (row) => (
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleDelete(row.id_batal); }}
+          className="p-2.5 text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl transition-all shadow-[0_0_10px_rgba(244,63,94,0)] hover:shadow-[0_0_15px_rgba(244,63,94,0.5)] group"
+          title="Delete Record"
+        >
+          <FaTrash className="group-hover:scale-110 transition-transform" />
+        </button>
+      )
+    }
+  ];
+
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-800">Cancellation Management</h1>
-        <p className="text-slate-500 mt-1">Review all cancellation records and reasons.</p>
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+        <h1 className="text-4xl font-black text-white tracking-tight">Cancellation Management</h1>
+        <p className="text-brand-300 font-medium mt-2">Review all booking cancellation records and reasons.</p>
       </motion.div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
-        ) : cancellations.length === 0 ? (
-          <div className="flex flex-col items-center py-16 text-slate-400">
-            <FaBan className="text-5xl mb-4 text-slate-200" />
-            <p>No cancellations found.</p>
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">#</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Booking ID</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Match Date</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Cancelled On</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Reason</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {cancellations.map((c, idx) => (
-                <tr key={c.id_batal} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 text-sm text-slate-400">{idx + 1}</td>
-                  <td className="py-4 px-6 font-mono text-sm font-bold text-red-500">{c.id_booking}</td>
-                  <td className="py-4 px-6 text-sm font-medium text-slate-700">{c.nama_lengkap}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{c.tgl_main}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{new Date(c.tgl_batal).toLocaleDateString('id-ID')}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600 max-w-xs">
-                    <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-medium">{c.alasan_batal}</span>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    <button onClick={() => handleDelete(c.id_batal)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
+        </div>
+      ) : (
+        <GlassTable 
+          columns={columns}
+          data={cancellations}
+          keyExtractor={(row) => row.id_batal}
+          emptyMessage="No cancellation records found."
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaBan } from 'react-icons/fa';
+import { FaSearch, FaBan, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import GlassTable from '../../components/ui/GlassTable';
+import PremiumInput from '../../components/ui/PremiumInput';
 
 const mockBookings = [
   { id_booking: 'BK0001', nama_lengkap: 'John Doe', nama_lapangan: 'Lapangan A', tgl_main: '2026-06-20', jam_mulai: '10:00', durasi: 2, total_tagihan: 300000, status_booking: 'Pending Payment' },
@@ -8,12 +10,12 @@ const mockBookings = [
   { id_booking: 'BK0003', nama_lengkap: 'Bob Wilson', nama_lapangan: 'Lapangan A', tgl_main: '2026-06-22', jam_mulai: '19:00', durasi: 2, total_tagihan: 400000, status_booking: 'Pending Verification' },
 ];
 
-const statusColor = {
-  'Pending Payment': 'bg-yellow-100 text-yellow-700',
-  'Pending Verification': 'bg-blue-100 text-blue-700',
-  'Confirmed': 'bg-green-100 text-green-700',
-  'Completed': 'bg-slate-100 text-slate-600',
-  'Cancelled': 'bg-red-100 text-red-600',
+const statusStyle = {
+  'Pending Payment': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  'Pending Verification': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  'Confirmed': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  'Completed': 'bg-white/10 text-text-secondary border-white/5',
+  'Cancelled': 'bg-rose-500/20 text-rose-400 border-rose-500/30',
 };
 
 export default function BookingMgmt() {
@@ -53,62 +55,89 @@ export default function BookingMgmt() {
     b.nama_lengkap?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const columns = [
+    { 
+      header: 'Booking ID', 
+      accessor: 'id_booking',
+      render: (row) => <span className="font-mono font-bold text-brand-300 bg-brand-500/10 px-3 py-1.5 rounded-lg border border-brand-500/20">{row.id_booking}</span>
+    },
+    { 
+      header: 'User', 
+      accessor: 'nama_lengkap',
+      render: (row) => <span className="font-bold text-white">{row.nama_lengkap}</span>
+    },
+    { 
+      header: 'Field', 
+      accessor: 'nama_lapangan',
+      render: (row) => <span className="text-brand-100">{row.nama_lapangan}</span>
+    },
+    { 
+      header: 'Date & Time', 
+      accessor: 'datetime',
+      render: (row) => (
+        <div className="flex flex-col gap-1 text-sm text-text-secondary">
+          <span className="flex items-center gap-2"><FaCalendarAlt className="text-brand-400" /> {row.tgl_main}</span>
+          <span className="flex items-center gap-2"><FaClock className="text-indigo-400" /> {row.jam_mulai} ({row.durasi} Hour)</span>
+        </div>
+      )
+    },
+    { 
+      header: 'Total', 
+      accessor: 'total_tagihan',
+      render: (row) => <span className="font-black text-emerald-400">Rp {parseInt(row.total_tagihan || 0).toLocaleString()}</span>
+    },
+    { 
+      header: 'Status', 
+      accessor: 'status_booking',
+      render: (row) => (
+        <span className={`text-xs font-black px-3 py-1.5 rounded-full border tracking-wide whitespace-nowrap ${statusStyle[row.status_booking] || statusStyle['Completed']}`}>
+          {row.status_booking}
+        </span>
+      )
+    },
+    { 
+      header: 'Action', 
+      accessor: 'action',
+      render: (row) => !['Cancelled', 'Completed'].includes(row.status_booking) ? (
+        <button 
+          onClick={(e) => { e.stopPropagation(); handleCancel(row.id_booking); }}
+          className="flex items-center gap-2 px-3 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+        >
+          <FaBan /> Cancel
+        </button>
+      ) : <span className="text-xs text-text-muted px-2">N/A</span>
+    }
+  ];
+
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-800">Booking Management</h1>
-        <p className="text-slate-500 mt-1">View and manage all field bookings.</p>
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tight">Booking Management</h1>
+          <p className="text-brand-300 font-medium mt-2">View and manage all field reservations.</p>
+        </div>
+        <div className="w-full md:w-80">
+          <PremiumInput 
+            icon={FaSearch}
+            placeholder="Search by ID or User..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
       </motion.div>
 
-      <div className="mb-6 relative max-w-sm">
-        <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input type="text" placeholder="Search by ID or user..." value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" />
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
-        {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Booking ID</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Field</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Date & Time</th>
-                <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Total</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.map(b => (
-                <tr key={b.id_booking} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 font-mono text-sm font-bold text-brand-600">{b.id_booking}</td>
-                  <td className="py-4 px-6 text-sm font-medium text-slate-700">{b.nama_lengkap}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{b.nama_lapangan}</td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{b.tgl_main} · {b.jam_mulai}</td>
-                  <td className="py-4 px-6 text-sm font-semibold text-slate-700 text-right">Rp {parseInt(b.total_tagihan || 0).toLocaleString()}</td>
-                  <td className="py-4 px-6 text-center">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${statusColor[b.status_booking] || 'bg-slate-100 text-slate-600'}`}>
-                      {b.status_booking}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    {!['Cancelled', 'Completed'].includes(b.status_booking) && (
-                      <button onClick={() => handleCancel(b.id_booking)}
-                        className="flex items-center gap-1 mx-auto px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">
-                        <FaBan /> Cancel
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
+        </div>
+      ) : (
+        <GlassTable 
+          columns={columns}
+          data={filtered}
+          keyExtractor={(row) => row.id_booking}
+          emptyMessage="No bookings found matching your search."
+        />
+      )}
     </div>
   );
 }

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaCheckCircle, FaTimesCircle, FaEye } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaEye, FaFileInvoiceDollar } from 'react-icons/fa';
+import GlassTable from '../../components/ui/GlassTable';
 
 const mockPayments = [
   { id_pembayaran: 'PAY0001', id_booking: 'BK0001', nama_user: 'John Doe', bank_asal: 'BRI', nama_rekening_pengirim: 'John Doe', tgl_transfer: '2026-06-19T10:00:00Z', total_tagihan: 300000, status_verifikasi: 'Pending' },
   { id_pembayaran: 'PAY0002', id_booking: 'BK0002', nama_user: 'Jane Smith', bank_asal: 'Mandiri', nama_rekening_pengirim: 'Jane Smith', tgl_transfer: '2026-06-18T14:00:00Z', total_tagihan: 150000, status_verifikasi: 'Approved' },
 ];
 
-const statusColor = {
-  'Pending': 'bg-yellow-100 text-yellow-700',
-  'Approved': 'bg-green-100 text-green-700',
-  'Rejected': 'bg-red-100 text-red-600',
+const statusStyle = {
+  'Pending': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  'Approved': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  'Rejected': 'bg-rose-500/20 text-rose-400 border-rose-500/30',
 };
 
 export default function PaymentVerification() {
@@ -53,69 +54,93 @@ export default function PaymentVerification() {
     }
   };
 
+  const columns = [
+    { 
+      header: 'Payment ID', 
+      accessor: 'id_pembayaran',
+      render: (row) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+            <FaFileInvoiceDollar />
+          </div>
+          <div>
+            <span className="font-mono font-bold text-brand-300">{row.id_pembayaran}</span>
+            <p className="text-xs text-text-muted mt-0.5">Booking: {row.id_booking}</p>
+          </div>
+        </div>
+      )
+    },
+    { 
+      header: 'User & Bank', 
+      accessor: 'user',
+      render: (row) => (
+        <div>
+          <p className="font-bold text-white">{row.nama_user}</p>
+          <p className="text-xs text-text-secondary mt-0.5">{row.bank_asal} - {row.nama_rekening_pengirim}</p>
+        </div>
+      )
+    },
+    { 
+      header: 'Amount', 
+      accessor: 'total_tagihan',
+      render: (row) => <span className="font-black text-emerald-400 text-lg">Rp {parseInt(row.total_tagihan || 0).toLocaleString()}</span>
+    },
+    { 
+      header: 'Status', 
+      accessor: 'status_verifikasi',
+      render: (row) => (
+        <span className={`text-xs font-black px-3 py-1.5 rounded-full border tracking-wide whitespace-nowrap ${statusStyle[row.status_verifikasi] || 'bg-white/10 text-text-secondary border-white/5'}`}>
+          {row.status_verifikasi}
+        </span>
+      )
+    },
+    { 
+      header: 'Actions', 
+      accessor: 'actions',
+      render: (row) => (
+        <div className="flex flex-col items-center gap-2">
+          {row.status_verifikasi === 'Pending' && (
+            <div className="flex gap-2">
+              <button disabled={verifying === row.id_pembayaran} onClick={(e) => { e.stopPropagation(); handleVerify(row.id_pembayaran, 'Approved'); }}
+                className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl font-bold hover:bg-emerald-500 hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <FaCheckCircle /> Approve
+              </button>
+              <button disabled={verifying === row.id_pembayaran} onClick={(e) => { e.stopPropagation(); handleVerify(row.id_pembayaran, 'Rejected'); }}
+                className="flex items-center gap-1 px-3 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-xl font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <FaTimesCircle /> Reject
+              </button>
+            </div>
+          )}
+          {row.bukti_transfer && (
+            <a href={`http://localhost:5001/uploads/transfer-proofs/${row.bukti_transfer}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center gap-1 px-3 py-1.5 bg-white/5 text-brand-300 border border-white/10 rounded-xl text-xs font-bold hover:bg-brand-500 hover:border-transparent hover:text-white transition-all w-full">
+              <FaEye /> View Proof
+            </a>
+          )}
+        </div>
+      )
+    }
+  ];
+
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-800">Payment Verification</h1>
-        <p className="text-slate-500 mt-1">Review and verify user payment proofs.</p>
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
+        <h1 className="text-4xl font-black text-white tracking-tight">Payment Verification</h1>
+        <p className="text-brand-300 font-medium mt-2">Review and verify user transfer proofs.</p>
       </motion.div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-100">
-              <tr>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Payment ID</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
-                <th className="text-left py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Bank</th>
-                <th className="text-right py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                <th className="text-center py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {payments.map(p => (
-                <tr key={p.id_pembayaran} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-4 px-6 font-mono text-sm font-bold text-brand-600">{p.id_pembayaran}</td>
-                  <td className="py-4 px-6">
-                    <p className="text-sm font-semibold text-slate-700">{p.nama_user}</p>
-                    <p className="text-xs text-slate-400">{p.nama_rekening_pengirim}</p>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-slate-600">{p.bank_asal}</td>
-                  <td className="py-4 px-6 text-sm font-semibold text-slate-700 text-right">Rp {parseInt(p.total_tagihan || 0).toLocaleString()}</td>
-                  <td className="py-4 px-6 text-center">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${statusColor[p.status_verifikasi] || 'bg-slate-100 text-slate-600'}`}>
-                      {p.status_verifikasi}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    {p.status_verifikasi === 'Pending' && (
-                      <div className="flex justify-center gap-2">
-                        <button disabled={verifying === p.id_pembayaran} onClick={() => handleVerify(p.id_pembayaran, 'Approved')}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors disabled:opacity-50">
-                          <FaCheckCircle /> Approve
-                        </button>
-                        <button disabled={verifying === p.id_pembayaran} onClick={() => handleVerify(p.id_pembayaran, 'Rejected')}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors disabled:opacity-50">
-                          <FaTimesCircle /> Reject
-                        </button>
-                      </div>
-                    )}
-                    {p.bukti_transfer && (
-                      <a href={`http://localhost:5001/uploads/transfer-proofs/${p.bukti_transfer}`} target="_blank" rel="noreferrer"
-                        className="flex items-center justify-center gap-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-100 transition-colors mt-1">
-                        <FaEye /> View Proof
-                      </a>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
+        </div>
+      ) : (
+        <GlassTable 
+          columns={columns}
+          data={payments}
+          keyExtractor={(row) => row.id_pembayaran}
+          emptyMessage="No payment verifications found."
+        />
+      )}
     </div>
   );
 }

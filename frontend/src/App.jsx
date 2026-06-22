@@ -30,10 +30,18 @@ import PaymentVerification from './pages/admin/PaymentVerification';
 import GalleryMgmt from './pages/admin/GalleryMgmt';
 import CancellationMgmt from './pages/admin/CancellationMgmt';
 
-function App() {
+import { useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+
+// Global UI
+import CursorTrail from './components/ui/CursorTrail';
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  
   return (
-    <Router>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
@@ -68,6 +76,15 @@ function App() {
           <Route path="cancellations" element={<CancellationMgmt />} />
         </Route>
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <CursorTrail />
+      <AnimatedRoutes />
     </Router>
   );
 }

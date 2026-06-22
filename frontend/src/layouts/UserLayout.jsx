@@ -21,7 +21,7 @@ export default function UserLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-100">
+    <div className="min-h-screen flex bg-background text-text-primary">
       {/* Sidebar */}
       <motion.aside
         initial={{ x: -80, opacity: 0 }}

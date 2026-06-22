@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FaUpload, FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaUpload, FaTrash, FaCalendarAlt, FaTimes } from 'react-icons/fa';
+import PremiumInput from '../../components/ui/PremiumInput';
 
 const mockPhotos = [
   { id_konten: 1, judul_foto: 'Pertandingan Pembukaan', file_gambar: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80', tgl_upload: '2026-06-01T10:00:00Z' },
@@ -59,66 +60,115 @@ export default function GalleryMgmt() {
   };
 
   return (
-    <div>
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start mb-8">
+    <div className="pb-10">
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">Gallery Management</h1>
-          <p className="text-slate-500 mt-1">Upload and manage gallery photos.</p>
+          <h1 className="text-4xl font-black text-white tracking-tight">Gallery Management</h1>
+          <p className="text-brand-300 font-medium mt-2">Upload and organize promotional content.</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg hover:-translate-y-0.5 transition-all">
+        <button onClick={() => setShowForm(true)} className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl font-bold shadow-[0_0_20px_rgba(109,40,217,0.4)] hover:shadow-[0_0_30px_rgba(109,40,217,0.6)] transition-all shimmer-button">
           <FaUpload /> Upload Photo
         </button>
       </motion.div>
 
-      {showForm && (
-        <motion.form initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleUpload}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8">
-          <h3 className="font-bold text-slate-800 mb-4">Upload New Photo</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Photo Title</label>
-              <input value={title} onChange={e => setTitle(e.target.value)} required
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none" placeholder="e.g. Tournament 2026" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-600 mb-1">Image File</label>
-              <input type="file" accept=".jpg,.jpeg,.png" onChange={e => setFile(e.target.files[0])} required
-                className="w-full p-3 border border-slate-200 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100" />
-            </div>
+      <AnimatePresence>
+        {showForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setShowForm(false)}
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="glass-premium rounded-[2.5rem] p-8 w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 relative z-10 overflow-hidden"
+            >
+              {/* Modal Ambient Glow */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+              <div className="flex justify-between items-center mb-8 relative z-10">
+                <h2 className="text-2xl font-black text-white tracking-tight">Upload New Photo</h2>
+                <button onClick={() => setShowForm(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 transition-colors border border-white/5"><FaTimes /></button>
+              </div>
+              
+              <form onSubmit={handleUpload} className="space-y-5 relative z-10">
+                <PremiumInput 
+                  label="Photo Title" 
+                  value={title} 
+                  onChange={e => setTitle(e.target.value)} 
+                  placeholder="e.g. Tournament 2026" 
+                  required
+                />
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-text-secondary tracking-wide">Image File</label>
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      accept=".jpg,.jpeg,.png" 
+                      onChange={e => setFile(e.target.files[0])} 
+                      required
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                    />
+                    <div className="w-full px-4 py-4 bg-background/50 border border-brand-500/30 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 text-text-muted transition-all hover:bg-brand-500/10 hover:border-brand-500/50">
+                      <FaUpload className="text-2xl text-brand-400 mb-1" />
+                      <span className="text-sm font-medium text-white">{file ? file.name : 'Click or drag image here'}</span>
+                      <span className="text-xs">JPG, PNG up to 5MB</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 mt-8 pt-4 border-t border-white/10">
+                  <button type="button" onClick={() => setShowForm(false)} className="px-6 py-3 border border-white/10 text-text-secondary rounded-2xl hover:bg-white/5 hover:text-white font-bold transition-all">Cancel</button>
+                  <button type="submit" disabled={uploading} className="flex items-center gap-2 px-8 py-3 bg-brand-600 text-white rounded-2xl font-bold shadow-[0_0_20px_rgba(109,40,217,0.4)] hover:bg-brand-500 hover:shadow-[0_0_30px_rgba(109,40,217,0.6)] transition-all disabled:opacity-50">
+                    {uploading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <FaUpload />} 
+                    {uploading ? 'Uploading...' : 'Upload'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-          <div className="flex gap-3 mt-4">
-            <button type="submit" disabled={uploading}
-              className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-colors disabled:opacity-50">
-              <FaUpload /> {uploading ? 'Uploading...' : 'Upload'}
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-6 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-medium hover:bg-slate-50">Cancel</button>
-          </div>
-        </motion.form>
-      )}
+        )}
+      </AnimatePresence>
 
       {loading ? (
-        <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600"></div></div>
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-500"></div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {photos.map(photo => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {photos.map((photo, idx) => {
             const isUrl = photo.file_gambar.startsWith('http') || photo.file_gambar.startsWith('blob');
             const imgSrc = isUrl ? photo.file_gambar : `http://localhost:5001/uploads/gallery/${photo.file_gambar}`;
             const date = new Date(photo.tgl_upload).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
             return (
-              <motion.div key={photo.id_konten} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 group">
-                <div className="relative h-48 overflow-hidden">
-                  <img src={imgSrc} alt={photo.judul_foto} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button onClick={() => handleDelete(photo.id_konten)}
-                      className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                      <FaTrash />
+              <motion.div 
+                key={photo.id_konten} 
+                initial={{ opacity: 0, scale: 0.95 }} 
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                className="glass-premium rounded-[2rem] overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.3)] border border-white/10 group relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div className="relative h-64 overflow-hidden">
+                  <img src={imgSrc} alt={photo.judul_foto} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  
+                  {/* Hover Delete Button */}
+                  <div className="absolute inset-0 bg-brand-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 backdrop-blur-sm">
+                    <button onClick={() => handleDelete(photo.id_konten)} className="p-4 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-[0_0_20px_rgba(244,63,94,0.5)] hover:scale-110">
+                      <FaTrash className="text-xl" />
                     </button>
                   </div>
                 </div>
-                <div className="p-4">
-                  <h4 className="font-bold text-slate-800">{photo.judul_foto}</h4>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1">
+
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
+                  <h4 className="font-bold text-white text-xl tracking-wide truncate shadow-sm">{photo.judul_foto}</h4>
+                  <div className="flex items-center gap-2 text-sm text-brand-300 mt-2 font-medium">
                     <FaCalendarAlt /> {date}
                   </div>
                 </div>

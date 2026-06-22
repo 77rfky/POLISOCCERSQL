@@ -4,24 +4,65 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased font-sans;
+    @apply bg-background text-slate-300 antialiased font-sans;
+  }
+  
+  /* Custom scrollbar for premium feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme('colors.background.DEFAULT');
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.brand.600');
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.brand.500');
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  .glass-premium {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(139, 92, 246, 0.15);
+    border-radius: 24px;
   }
 
-  .glass-dark {
-    @apply bg-slate-900/70 backdrop-blur-md border border-slate-700/50 shadow-xl text-white;
+  .glass-glow-purple {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.4);
+    border-radius: 24px;
+    transition: all 0.3s ease;
+  }
+  
+  .glass-glow-purple:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 50px rgba(139, 92, 246, 0.6);
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-700 to-indigo-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-600;
   }
 
   .bg-gradient-primary {
-    @apply bg-gradient-to-r from-purple-700 to-indigo-600;
+    @apply bg-gradient-to-r from-brand-600 to-brand-500;
+  }
+  
+  .shimmer-button {
+    @apply relative overflow-hidden;
+  }
+  
+  .shimmer-button::after {
+    content: '';
+    @apply absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full;
+    animation: shimmer 3s infinite;
   }
 }
