@@ -51,7 +51,10 @@ export default function Payment() {
         headers: { Authorization: `Bearer ${token}` },
         body: formData
       });
-      if (!res.ok) throw new Error('Upload failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || 'Upload failed');
+      }
       setMsg({ type: 'success', text: 'Payment proof uploaded! Waiting for admin verification.' });
       setFile(null);
       setForm({ bank_asal: '', nama_rekening_pengirim: '' });
@@ -166,7 +169,7 @@ export default function Payment() {
                       <FaUpload className="text-3xl text-brand-400" />
                     </div>
                     <p className="text-white font-bold text-lg mb-2">Click to upload or drag and drop</p>
-                    <p className="text-text-muted text-sm font-medium">JPG or PNG (max. 5MB)</p>
+                    <p className="text-text-muted text-sm font-medium">JPG or PNG (max. 20MB)</p>
                   </>
                 )}
               </div>
