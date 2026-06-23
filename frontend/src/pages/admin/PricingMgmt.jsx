@@ -12,52 +12,76 @@ const mockPricing = [
 
 export default function PricingMgmt() {
   const [pricing, setPricing] = useState([]);
+  const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ nama_kategori: '', jam_mulai_berlaku: '', jam_selesai_berlaku: '', harga_per_jam: '' });
+  const [form, setForm] = useState({ id_lapangan: '', nama_kategori: '', jam_mulai_berlaku: '', jam_selesai_berlaku: '', harga_per_jam: '' });
   const token = localStorage.getItem('token');
 
-  const fetchPricing = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('https://polisoccersql-production.up.railway.app/api/pricing', { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setPricing(data);
-    } catch { setPricing(mockPricing); }
-    finally { setLoading(false); }
+      const [priceRes, fieldRes] = await Promise.all([
+        fetch('https://polisoccersql-production.up.railway.app/api/pricing', { headers: { Authorization: `Bearer ${token}` } }),
+        fetch('https://polisoccersql-production.up.railway.app/api/fields')
+      ]);
+      if (!priceRes.ok || !fieldRes.ok) throw new Error();
+      setPricing(await priceRes.json());
+      setFields(await fieldRes.json());
+    } catch {
+      console.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchPricing(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const openCreate = () => { setEditItem(null); setForm({ nama_kategori: '', jam_mulai_berlaku: '', jam_selesai_berlaku: '', harga_per_jam: '' }); setShowModal(true); };
-  const openEdit = (p) => { setEditItem(p); setForm({ nama_kategori: p.nama_kategori, jam_mulai_berlaku: p.jam_mulai_berlaku.slice(0, 5), jam_selesai_berlaku: p.jam_selesai_berlaku.slice(0, 5), harga_per_jam: p.harga_per_jam }); setShowModal(true); };
+  const openCreate = () => { 
+    setEditItem(null); 
+    setForm({ id_lapangan: fields.length > 0 ? fields[0].id_lapangan : '', nama_kategori: '', jam_mulai_berlaku: '', jam_selesai_berlaku: '', harga_per_jam: '' }); 
+    setShowModal(true); 
+  };
+  const openEdit = (p) => { 
+    setEditItem(p); 
+    setForm({ id_lapangan: p.id_lapangan, nama_kategori: p.nama_kategori, jam_mulai_berlaku: p.jam_mulai_berlaku.slice(0, 5), jam_selesai_berlaku: p.jam_selesai_berlaku.slice(0, 5), harga_per_jam: p.harga_per_jam }); 
+    setShowModal(true); 
+  };
 
   const handleSave = async () => {
+    if (!form.id_lapangan || !form.nama_kategori || !form.jam_mulai_berlaku || !form.jam_selesai_berlaku || !form.harga_per_jam) {
+      alert('Tolong isi semua bidang data!');
+      return;
+    }
     const url = editItem ? `https://polisoccersql-production.up.railway.app/api/pricing/${editItem.id_tarif}` : 'https://polisoccersql-production.up.railway.app/api/pricing';
     const method = editItem ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) });
-      if (!res.ok) throw new Error();
-      setShowModal(false); fetchPricing();
-    } catch {
-      if (editItem) setPricing(prev => prev.map(p => p.id_tarif === editItem.id_tarif ? { ...p, ...form } : p));
-      else setPricing(prev => [...prev, { id_tarif: Date.now(), ...form }]);
-      setShowModal(false);
+      if (!res.ok) throw new Error('Gagal menyimpan data');
+      setShowModal(false); 
+      fetchData();
+    } catch (err) {
+      alert(err.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this pricing tier?')) return;
+    if (!confirm('Hapus tarif ini?')) return;
     try {
-      await fetch(`https://polisoccersql-production.up.railway.app/api/pricing/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      fetchPricing();
-    } catch { setPricing(prev => prev.filter(p => p.id_tarif !== id)); }
+      const res = await fetch(`https://polisoccersql-production.up.railway.app/api/pricing/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if(!res.ok) throw new Error('Gagal menghapus');
+      fetchData();
+    } catch(err) { alert(err.message); }
   };
 
   const columns = [
     { 
-      header: 'Category', 
+      header: 'Lapangan', 
+      accessor: 'nama_lapangan',
+      render: (row) => <span className="font-bold text-white text-md tracking-wide">{row.nama_lapangan || 'Unknown'}</span>
+    },
+    { 
+      header: 'Kategori', 
       accessor: 'nama_kategori',
       render: (row) => (
         <div className="flex items-center gap-3">
@@ -69,7 +93,7 @@ export default function PricingMgmt() {
       )
     },
     { 
-      header: 'Time Period', 
+      header: 'Waktu', 
       accessor: 'time',
       render: (row) => (
         <span className="text-brand-300 font-medium">
@@ -78,12 +102,12 @@ export default function PricingMgmt() {
       )
     },
     { 
-      header: 'Price / Hour', 
+      header: 'Harga / Jam', 
       accessor: 'harga_per_jam',
       render: (row) => <span className="font-black text-emerald-400 text-lg">Rp {parseInt(row.harga_per_jam).toLocaleString()}</span>
     },
     { 
-      header: 'Actions', 
+      header: 'Aksi', 
       accessor: 'actions',
       render: (row) => (
         <div className="flex justify-center gap-3">
@@ -102,11 +126,11 @@ export default function PricingMgmt() {
     <div className="pb-10">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">Pricing Management</h1>
-          <p className="text-brand-300 font-medium mt-2">Configure time-based pricing categories.</p>
+          <h1 className="text-4xl font-black text-white tracking-tight">Manajemen Tarif</h1>
+          <p className="text-brand-300 font-medium mt-2">Atur harga berdasarkan lapangan dan waktu.</p>
         </div>
         <button onClick={openCreate} className="flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl font-bold shadow-[0_0_20px_rgba(109,40,217,0.4)] hover:shadow-[0_0_30px_rgba(109,40,217,0.6)] transition-all shimmer-button">
-          <FaPlus /> Add Pricing Tier
+          <FaPlus /> Tambah Tarif
         </button>
       </motion.div>
 
@@ -149,11 +173,25 @@ export default function PricingMgmt() {
               </div>
               
               <div className="space-y-5 relative z-10">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-text-secondary">Pilih Lapangan</label>
+                  <select
+                    className="w-full px-5 py-3 bg-background/50 border border-white/10 rounded-2xl text-white font-medium focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 outline-none"
+                    value={form.id_lapangan}
+                    onChange={(e) => setForm({ ...form, id_lapangan: e.target.value })}
+                  >
+                    <option value="">-- Pilih Lapangan --</option>
+                    {fields.map(f => (
+                      <option key={f.id_lapangan} value={f.id_lapangan}>{f.nama_lapangan}</option>
+                    ))}
+                  </select>
+                </div>
+
                 <PremiumInput 
-                  label="Category Name" 
+                  label="Nama Kategori (contoh: Pagi/Malam)" 
                   value={form.nama_kategori} 
                   onChange={e => setForm({...form, nama_kategori: e.target.value})} 
-                  placeholder="e.g. Afternoon Prime" 
+                  placeholder="e.g. Pagi Prime" 
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
