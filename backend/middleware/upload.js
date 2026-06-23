@@ -1,15 +1,23 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const createDirIfNotExist = (dir) => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+};
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        let uploadPath = 'uploads/';
         if (file.fieldname === 'bukti_transfer') {
-            cb(null, 'uploads/transfer-proofs/');
+            uploadPath = 'uploads/transfer-proofs/';
         } else if (file.fieldname === 'file_gambar') {
-            cb(null, 'uploads/gallery/');
-        } else {
-            cb(null, 'uploads/');
+            uploadPath = 'uploads/gallery/';
         }
+        createDirIfNotExist(uploadPath);
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
